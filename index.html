@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Downloader</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 2em; }
+    .container { background: #fff; padding: 2em; border-radius: 8px; max-width: 400px; margin: auto; }
+    input, button { width: 100%; padding: 0.8em; margin: 0.5em 0; border-radius: 4px; border: 1px solid #ccc; }
+    button { background-color: #007bff; color: #fff; border: none; cursor: pointer; }
+    button:disabled { background-color: #ccc; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Video Downloader</h2>
+    <form id="downloadForm">
+      <input type="url" id="videoUrl" placeholder="Paste YouTube URL here" required />
+      <button type="submit">Download</button>
+      <div class="error" id="error"></div>
+    </form>
+  </div>
+  <script>
+    const form = document.getElementById('downloadForm');
+    const errorDiv = document.getElementById('error');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      errorDiv.textContent = '';
+      const url = document.getElementById('videoUrl').value;
+      try {
+        const res = await fetch('/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          errorDiv.textContent = data.error || 'Download failed.';
+          return;
+        }
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'video.mp4';
+        a.click();
+      } catch (err) {
+        errorDiv.textContent = 'An error occurred.';
+      }
+    });
+  </script>
+</body>
+</html>
